@@ -1,0 +1,27 @@
+def upload = Action(parse.multipartFormData(handleFilePartAsFile)) { implicit request =>
+
+    val fileOption = request.body.file("name").map {
+      case FilePart(key, filename, contentType, file) =>
+        println(s"key = ${key}, filename = ${filename}, contentType = ${contentType}, file = $file")
+        logger.info(s"key = ${key}, filename = ${filename}, contentType = ${contentType}, file = $file")
+        var f = new File("/home/rahul/Downloads/fileupload-arc/public/Uploads"+filename)
+        var dir : File = new File("/home/rahul/Downloads/fileupload-arc/public/Uploads")
+        var files : List[File] =   FileUtils.listFiles(dir,null,null).asInstanceOf[List[File]]
+        var fileMetadatas : Array[FileMetaData] = new Array[FileMetaData](files.length)
+        var i = 0 ;
+        files.foreach(f=> {
+          fileMetadatas(i++) = new FileMetaData(f.getCanonicalFile,FileUtils.sizeOf(f),new java.util.Date().toString)
+        })
+
+        FileUtils.copyFile(file,f)
+        val data = operateOnTempFile(file)
+        data
+    }
+
+    //Ok(s"file size = ${fileOption.getOrElse("no file")}")
+
+        Ok(views.html.downloads())
+  }
+
+
+case class FileMetaData(fileName: String,fileSize : Int , createDate : java.util.Date)
